@@ -11,13 +11,16 @@ class medianBot:
         self.last_updated_month = datetime.datetime.now().month
 
     def predict_median_price(self):
-        # Add logic to predict the median price of the stock
-        pass
+        barset = self.api.get_barset(self.symbol, 'day', limit=30)
+        bars = barset[self.symbol]
 
+        # Extract closing prices
+        closing_prices = [bar.c for bar in bars]
 
-    def rebalance_trades(self, median_price):
-        # Add logic to re-buy or re-short the stock when the price crosses the median price
-        pass
+        # Calculate the median price
+        median_price = sorted(closing_prices)[len(closing_prices)//2]
+
+        return median_price
 
     def calculate_moving_average(self, symbol, window):
         # Fetch historical data
@@ -50,6 +53,37 @@ class medianBot:
                 return 'sell'
         return 'hold'
 
+
+    def buy_stock(self, qty):
+        # Place a market order to buy the stock
+        try:
+            self.api.submit_order(
+                symbol=self.symbol,
+                qty=qty,
+                side='buy',
+                type='market',
+                time_in_force='gtc'
+            )
+            print(f"Buy order placed for {qty} shares.")
+        except Exception as e:
+            print(f"Error placing buy order: {e}")
+
+    def sell_stock(self, qty):
+        # Place a market order to sell the stock
+        try:
+            self.api.submit_order(
+                symbol=self.symbol,
+                qty=qty,
+                side='sell',
+                type='market',
+                time_in_force='gtc'
+            )
+            print(f"Sell order placed for {qty} shares.")
+        except Exception as e:
+            print(f"Error placing sell order: {e}")
+
+
+
     def execute_trade(self):
         median_price = self.predict_median_price()
         current_price = self.get_current_price()
@@ -57,22 +91,24 @@ class medianBot:
 
         decision = self.should_enter_trade(median_price, current_price, volume)
         if decision == 'buy':
-            # Implement buy logic
-            pass
+            self.buy_stock{1}
         elif decision == 'sell':
-            # Implement sell logic
-            pass
+            self.sell_stock{1}
         elif decision == 'hold':
-            # Implement hold logic
-            pass
+            time.sleep(3600)
 
     def get_current_price(self):
-        # Implement logic to fetch the current price of the stock
-        pass
+        try:
+            last_trade = self.api.get_last_trade(self.symbol)
+            current_price = last_trade.price
+            return current_price
+        except Exception as e:
+            print(f"Error fetching current price: {e}")
+            return None
+
 
     def run(self):
         while True:
-            time.sleep(1) # Adjust the sleep time as needed
+            time.sleep(3600) # Adjust the sleep time as needed
             median_price = self.predict_median_price()
             self.execute_trade(median_price)
-            self.rebalance_trades(median_price)
